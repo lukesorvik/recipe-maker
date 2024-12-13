@@ -1,10 +1,16 @@
-# Recipe Maker
+<div style="display: flex; align-items: center;">
+    <img src="assets/1024.png" alt="Logo" width="100" height="100" style="margin-right: 10px;">
+    <h1>Recipe Maker</h1>
+</div>
+
+<br/>
 
 **Have you ever struggled to come up with a recipe using the ingredients lying around your house?** 
 
 Well, struggle no more! With Recipe Maker, you can simply list the ingredients you have, hit the **Generate** button, and get a personalized recipe instantly!
 
 ---
+![Image](assets\repoImages\example.png)
 
 ## Features
 
