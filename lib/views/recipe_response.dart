@@ -45,7 +45,6 @@ class RecipeResponse extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
-                color: Colors.orange.shade100,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -70,7 +69,6 @@ class RecipeResponse extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
-                color: Colors.blue.shade100,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

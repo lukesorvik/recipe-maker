@@ -49,34 +49,36 @@ class AllEntriesView extends StatelessWidget {
                 // for each entry in the journal, create a list element
                 // using the _createListElementForEntry method
                 child: listViewBuilder()),
-            Spacer(flex: 3)
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            FloatingActionButton.extended(
-              heroTag: 'generate',
-              backgroundColor:
-                  Theme.of(context).floatingActionButtonTheme.backgroundColor,
-              onPressed: () {
-                _navigateToRecipeResponse(context);
-              },
-              label: const Text('Generate'),
-              icon: const Icon(Icons.food_bank, size: 25),
+            Spacer(flex: 1),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  constraints: const BoxConstraints(minHeight: 45),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _navigateToRecipeResponse(context);
+                    },
+                    icon: const Icon(Icons.food_bank, size: 25),
+                    label:
+                        const Text('Generate', style: TextStyle(fontSize: 20)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  constraints: BoxConstraints(minHeight: 45),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _navigateToRecipeResponseLocation(context);
+                    },
+                    icon: const Icon(Icons.location_on, size: 25),
+                    label: const Text('Generate with Location',
+                        style: TextStyle(fontSize: 20)),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 10),
-            FloatingActionButton.extended(
-              heroTag: 'generate_with_location',
-              backgroundColor:
-                  Theme.of(context).floatingActionButtonTheme.backgroundColor,
-              onPressed: () {
-                _navigateToRecipeResponseLocation(context);
-              },
-              label: const Text('Generate with Location'),
-              icon: const Icon(Icons.location_on, size: 25),
-            ),
+            Spacer(flex: 1),
           ],
         ));
   }
@@ -103,19 +105,31 @@ class AllEntriesView extends StatelessWidget {
   // @returns a container widget with the list element
   Widget _createListElementForEntry(BuildContext context, IngredientEntry entry,
       PantryProvider pantryProvider) {
+    final textController = TextEditingController.fromValue(
+      TextEditingValue(
+        text: entry.text,
+        selection: TextSelection.collapsed(offset: entry.text.length),
+      ),
+    );
+
     return ListTile(
       // name field
       title: TextField(
-        controller: TextEditingController(text: entry.text),
+        controller: textController,
         decoration: const InputDecoration(
           hintText: 'insert a food',
           filled: false, // Set filled to false to remove grey background
         ),
-        // TODO: figure out how to make it change without hitting "done" one keyboard
-        // but also so it doesnt kick you out each time you type a letter
-        onSubmitted: (value) => pantryProvider
-            .upsertPantryEntry(IngredientEntry.withUpdatedText(entry, value)),
+        onChanged: (value) {
+          pantryProvider
+              .upsertPantryEntry(IngredientEntry.withUpdatedText(entry, value));
+        },
+        onEditingComplete: () {
+          // Ensure the focus is removed when editing is done
+          FocusScope.of(context).unfocus();
+        },
       ),
+
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -132,6 +146,7 @@ class AllEntriesView extends StatelessWidget {
                       entry, entry.quantity - 1));
             },
           ),
+
           //quantity field
           SizedBox(
             width: 50,
@@ -156,20 +171,28 @@ class AllEntriesView extends StatelessWidget {
               },
             ),
           ),
+
           // + button here
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              pantryProvider.upsertPantryEntry(
-                  IngredientEntry.withUpdatedQuantity(
-                      entry, entry.quantity + 1));
-            },
+          Semantics(
+            label: 'add',
+            child: IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () {
+                pantryProvider.upsertPantryEntry(
+                    IngredientEntry.withUpdatedQuantity(
+                        entry, entry.quantity + 1));
+              },
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.delete),
-            onPressed: () {
-              pantryProvider.removePantryEntry(entry);
-            },
+
+          Semantics(
+            label: 'subtract',
+            child: IconButton(
+              icon: const Icon(Icons.delete),
+              onPressed: () {
+                pantryProvider.removePantryEntry(entry);
+              },
+            ),
           )
         ],
       ),
