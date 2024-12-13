@@ -62,6 +62,11 @@ class GeminiProvider extends ChangeNotifier {
 
   Future<void> fetchGeminiRecipe(List<String> ingredients,
       {String city = '', String country = ''}) async {
+    // Set loading status to true
+    _isLoading = true;
+    // set error status to false
+    _hasError = false;
+
     // Load the .env file
     await dotenv.load(fileName: "APIKEY.env");
 
@@ -120,12 +125,24 @@ class GeminiProvider extends ChangeNotifier {
     // Prompt for the Gemini model
     final prompt =
         'Give me a $CuisineType recipe for $MealType that uses any of the ingredients in this'
-        ' list of any quantity: $ingredientPrompt  Generated recipe must not use any ingredients not in '
-        'the ingredients list other than spices and water.'
+        ' list of any quantity, do not use all ingredients unless required: $ingredientPrompt  Generated recipe must not use any ingredients not in '
+        'the ingredients list other than spices and water.  '
         ' $extraPrompt. Make the recipe in english.';
     // Debug print the prompt
     print('\n Prompt: ' + prompt);
-    final response = await model.generateContent([Content.text(prompt)]);
+    GenerateContentResponse response;
+
+    try {
+      response = await model.generateContent([Content.text(prompt)]);
+      // Debug print the response from gemini
+      print('\n Gemini Response : ' + response.text.toString());
+    } catch (e) {
+      print("Error generating content from Gemini: $e");
+      _hasError = true;
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
     // Debug print the response from gemini
     print('\n Gemini Response : ' + response.text.toString());
 
@@ -142,6 +159,7 @@ class GeminiProvider extends ChangeNotifier {
       // Means must regenerate recipe
       _hasError = true;
       _isLoading = false;
+      notifyListeners();
       return;
     }
     // We have valid json yay!
@@ -156,6 +174,7 @@ class GeminiProvider extends ChangeNotifier {
       // Means must regenerate recipe
       _hasError = true;
       _isLoading = false;
+      notifyListeners();
       return;
     }
     // We have a valid recipe object yay!
@@ -171,6 +190,7 @@ class GeminiProvider extends ChangeNotifier {
       // Means must regenerate recipe
       _hasError = true;
       _isLoading = false;
+      notifyListeners();
       return;
     }
     // Else no error, set error status to false
@@ -180,6 +200,8 @@ class GeminiProvider extends ChangeNotifier {
       _isLoading = false;
       // Set local recipe to the generated recipe
       _recipe = recipe;
+      // Tell listeners that the recipe has been updated
+      notifyListeners();
     }
   }
 }

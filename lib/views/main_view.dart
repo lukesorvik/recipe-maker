@@ -317,19 +317,14 @@ class AllEntriesView extends StatelessWidget {
         Provider.of<PantryProvider>(context, listen: false);
 
     // TODO: change to just navigate to RECIPE RESPONSE then call gemini there so can have loading symbol
-    await geminiProvider.fetchGeminiRecipe(pantryProvider
+    geminiProvider.fetchGeminiRecipe(pantryProvider
         .getEntries()
         .map((entry) => '${entry.text} x ${entry.quantity} ${entry.unit}')
         .toList());
 
     //wait for the asynchroneous call to Navigator.push to return via pop then execute the code below
     await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => RecipeResponse(
-                recipeName: geminiProvider.recipe.recipe,
-                ingredients: geminiProvider.recipe.ingredients,
-                directions: geminiProvider.recipe.steps)));
+        context, MaterialPageRoute(builder: (context) => RecipeResponse()));
 
     if (!context.mounted) {
       //if the context is not mounted, we do not want to do anything
@@ -359,9 +354,9 @@ class AllEntriesView extends StatelessWidget {
         ' ' +
         positionProvider.country);
 
-    // TODO: change to just navigate to RECIPE RESPONSE then call gemini there so can have loading symbol
+    // Call gemini asynchroneously
     // Call with city and country from recipe provider
-    await geminiProvider.fetchGeminiRecipe(
+    geminiProvider.fetchGeminiRecipe(
         pantryProvider
             .getEntries()
             .map((entry) => '${entry.text} x ${entry.quantity} ${entry.unit}')
@@ -371,22 +366,10 @@ class AllEntriesView extends StatelessWidget {
 
     //wait for the asynchroneous call to Navigator.push to return via pop then execute the code below
     await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => RecipeResponse(
-                recipeName: geminiProvider.recipe.recipe,
-                ingredients: geminiProvider.recipe.ingredients,
-                directions: geminiProvider.recipe.steps)));
+        context, MaterialPageRoute(builder: (context) => RecipeResponse()));
 
     if (!context.mounted) {
-      //if the context is not mounted, we do not want to do anything
-      //means that the widget is not in the widget tree
-      // need to make sure that the widget is still in the widget tree
-      //if it is not, we do not want to do anything
-      //if current view is not in tree we do not want to update the state for the provider
       return;
     }
   }
-
-  //TODO : Make a navigateTOResponseWITHLOCATION
 }
