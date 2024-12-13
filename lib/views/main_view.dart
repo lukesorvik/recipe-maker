@@ -187,10 +187,10 @@ class AllEntriesView extends StatelessWidget {
     );
   }
 
-  // create a widget to be used in the list view
-  // @param context: the current context
-  // @param entry: the  entry to create the list element for
-  // @returns a container widget with the list element
+// create a widget to be used in the list view
+// @param context: the current context
+// @param entry: the entry to create the list element for
+// @returns a container widget with the list element
   Widget _createListElementForEntry(BuildContext context, IngredientEntry entry,
       PantryProvider pantryProvider) {
     final textController = TextEditingController.fromValue(
@@ -200,89 +200,75 @@ class AllEntriesView extends StatelessWidget {
       ),
     );
 
-    return ListTile(
-      // name field
-      title: TextField(
-        controller: textController,
-        decoration: const InputDecoration(
-          hintText: 'insert a food',
-          filled: false, // Set filled to false to remove grey background
-        ),
-        onChanged: (value) {
-          pantryProvider
-              .upsertPantryEntry(IngredientEntry.withUpdatedText(entry, value));
-        },
-        onEditingComplete: () {
-          // Ensure the focus is removed when editing is done
-          FocusScope.of(context).unfocus();
-        },
+    final quantityController = TextEditingController.fromValue(
+      TextEditingValue(
+        text: entry.quantity.toString(),
+        selection:
+            TextSelection.collapsed(offset: entry.quantity.toString().length),
       ),
+    );
 
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // - button here
-          IconButton(
-            icon: const Icon(Icons.remove),
-            onPressed: () {
-              int newQuantity = entry.quantity - 1;
-              if (newQuantity < 0) {
-                return;
-              }
-              pantryProvider.upsertPantryEntry(
-                  IngredientEntry.withUpdatedQuantity(
-                      entry, entry.quantity - 1));
-            },
+    return Dismissible(
+      key: Key(entry.id.toString()),
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        pantryProvider.removePantryEntry(entry);
+      },
+      child: ListTile(
+        // name field
+        title: TextField(
+          controller: textController,
+          decoration: const InputDecoration(
+            hintText: 'insert a food',
+            filled: false, // Set filled to false to remove grey background
           ),
+          onChanged: (value) {
+            pantryProvider.upsertPantryEntry(
+                IngredientEntry.withUpdatedText(entry, value));
+          },
+          onEditingComplete: () {
+            // Ensure the focus is removed when editing is done
+            FocusScope.of(context).unfocus();
+          },
+        ),
 
-          //quantity field
-          SizedBox(
-            width: 50,
-            child: TextField(
-              controller:
-                  TextEditingController(text: entry.quantity.toString()),
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-              ),
-              onSubmitted: (value) {
+        // edit quantity field
+        trailing: SizedBox(
+          width: 50,
+          child: TextField(
+            controller: quantityController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+            ),
+            onChanged: (value) {
+              if (value.isEmpty) {
+                pantryProvider.upsertPantryEntry(
+                    IngredientEntry.withUpdatedQuantity(entry, 0));
+              } else {
                 final newQuantity = int.tryParse(value);
-                if (newQuantity != null && newQuantity >= 0) {
+                if (newQuantity != null && newQuantity >= 1) {
                   pantryProvider.upsertPantryEntry(
                       IngredientEntry.withUpdatedQuantity(entry, newQuantity));
                 } else {
                   // reload since invalid value
                   pantryProvider.reload();
                 }
-              },
-            ),
+              }
+            },
+            onEditingComplete: () {
+              // Ensure the focus is removed when editing is done
+              FocusScope.of(context).unfocus();
+            },
           ),
-
-          // + button here
-          Semantics(
-            label: 'add',
-            child: IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () {
-                pantryProvider.upsertPantryEntry(
-                    IngredientEntry.withUpdatedQuantity(
-                        entry, entry.quantity + 1));
-              },
-            ),
-          ),
-
-          Semantics(
-            label: 'subtract',
-            child: IconButton(
-              icon: const Icon(Icons.delete),
-              onPressed: () {
-                pantryProvider.removePantryEntry(entry);
-              },
-            ),
-          )
-        ],
+        ),
       ),
     );
   }
