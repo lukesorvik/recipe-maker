@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:recipe_maker/models/ingredient_entry.dart';
 import 'package:recipe_maker/providers/gemini_recipe_provider.dart';
 import 'package:recipe_maker/providers/pantry_provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:recipe_maker/providers/position_provider.dart';
 import 'package:recipe_maker/views/recipe_response.dart';
 
@@ -14,23 +13,18 @@ class AllEntriesView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            backgroundColor: const Color.fromARGB(255, 4, 122, 75),
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             toolbarHeight: 100,
-            title: Text(
-              'Fridge',
-              style: GoogleFonts.lato(
-                  fontSize: 50,
-                  fontWeight: FontWeight.w700,
-                  fontStyle: FontStyle.italic,
-                  color: const Color.fromARGB(255, 255, 255, 255)),
+            title: const Center(
+              child: Text('Ingredients',
+                  style: TextStyle(fontSize: 30), textAlign: TextAlign.center),
             ),
-            centerTitle: true,
             actions: <Widget>[
               IconButton(
                   iconSize: 48,
                   onPressed: () {
                     IngredientEntry entry =
-                        IngredientEntry.fromText(text: '', quantity: 0);
+                        IngredientEntry.fromText(text: '', quantity: 1);
                     print(entry.id);
                     // Add an entry when the button is pressed
                     PantryProvider provider =
@@ -38,8 +32,7 @@ class AllEntriesView extends StatelessWidget {
                     provider.upsertPantryEntry(entry);
                   },
                   icon: const Icon(Icons.add),
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  splashColor: const Color.fromARGB(255, 8, 78, 135)),
+                  splashColor: Theme.of(context).splashColor),
               IconButton(
                   iconSize: 48,
                   onPressed: () {
@@ -47,15 +40,16 @@ class AllEntriesView extends StatelessWidget {
                     Provider.of<PantryProvider>(context, listen: false).clear();
                   },
                   icon: const Icon(Icons.clear),
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  splashColor: const Color.fromARGB(255, 135, 8, 29)),
+                  splashColor: Theme.of(context).splashColor),
             ]),
         body: Column(
           children: <Widget>[
             Expanded(
+                flex: 10,
                 // for each entry in the journal, create a list element
                 // using the _createListElementForEntry method
                 child: listViewBuilder()),
+            Spacer(flex: 3)
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -64,23 +58,24 @@ class AllEntriesView extends StatelessWidget {
           children: [
             FloatingActionButton.extended(
               heroTag: 'generate',
-              backgroundColor: const Color.fromARGB(255, 5, 116, 202),
+              backgroundColor:
+                  Theme.of(context).floatingActionButtonTheme.backgroundColor,
               onPressed: () {
                 _navigateToRecipeResponse(context);
               },
               label: const Text('Generate'),
-              icon: const Icon(Icons.food_bank, color: Colors.white, size: 25),
+              icon: const Icon(Icons.food_bank, size: 25),
             ),
             const SizedBox(height: 10),
             FloatingActionButton.extended(
               heroTag: 'generate_with_location',
-              backgroundColor: const Color.fromARGB(255, 5, 116, 202),
+              backgroundColor:
+                  Theme.of(context).floatingActionButtonTheme.backgroundColor,
               onPressed: () {
                 _navigateToRecipeResponseLocation(context);
               },
               label: const Text('Generate with Location'),
-              icon:
-                  const Icon(Icons.location_on, color: Colors.white, size: 25),
+              icon: const Icon(Icons.location_on, size: 25),
             ),
           ],
         ));
