@@ -208,6 +208,8 @@ class AllEntriesView extends StatelessWidget {
       ),
     );
 
+    List<String> units = ['', 'cup', 'tbsp', 'tsp', 'oz', 'g', 'kg', 'ml', 'l'];
+
     return Dismissible(
       key: Key(entry.id.toString()),
       background: Container(
@@ -239,35 +241,67 @@ class AllEntriesView extends StatelessWidget {
         ),
 
         // edit quantity field
-        trailing: SizedBox(
-          width: 50,
-          child: TextField(
-            controller: quantityController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 50,
+              child: TextField(
+                controller: quantityController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                ),
+                // if the quantity box is changed
+                onChanged: (value) {
+                  // if the box is now empty add 0 since cant store null
+                  if (value.isEmpty) {
+                    pantryProvider.upsertPantryEntry(
+                        IngredientEntry.withUpdatedQuantity(entry, 0));
+                  } else {
+                    // they entered soemthing in the box
+                    // check if int and greater than 0
+                    final newQuantity = int.tryParse(value);
+                    if (newQuantity != null && newQuantity >= 1) {
+                      pantryProvider.upsertPantryEntry(
+                          IngredientEntry.withUpdatedQuantity(
+                              entry, newQuantity));
+                    } else {
+                      // reload text box with previous stored value since invalid value
+                      pantryProvider.reload();
+                    }
+                  }
+                },
+                onEditingComplete: () {
+                  // Ensure the focus is removed when editing is done
+                  FocusScope.of(context).unfocus();
+                },
+              ),
             ),
-            onChanged: (value) {
-              if (value.isEmpty) {
-                pantryProvider.upsertPantryEntry(
-                    IngredientEntry.withUpdatedQuantity(entry, 0));
-              } else {
-                final newQuantity = int.tryParse(value);
-                if (newQuantity != null && newQuantity >= 1) {
+            const SizedBox(width: 10),
+            DropdownButton<String>(
+              // use provider to get unit
+              value: entry.unit,
+              // if the dropdown is changed
+              onChanged: (String? newValue) {
+                if (newValue != null) {
                   pantryProvider.upsertPantryEntry(
-                      IngredientEntry.withUpdatedQuantity(entry, newQuantity));
-                } else {
-                  // reload since invalid value
-                  pantryProvider.reload();
+                      IngredientEntry.withUpdatedUnit(entry, newValue));
+                  // Update the entry with the selected unit if needed
+                  // pantryProvider.upsertPantryEntry(
+                  //     IngredientEntry.withUpdatedUnit(entry, selectedUnit));
                 }
-              }
-            },
-            onEditingComplete: () {
-              // Ensure the focus is removed when editing is done
-              FocusScope.of(context).unfocus();
-            },
-          ),
+              },
+              items: units.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ],
         ),
       ),
     );
@@ -285,7 +319,7 @@ class AllEntriesView extends StatelessWidget {
     // TODO: change to just navigate to RECIPE RESPONSE then call gemini there so can have loading symbol
     await geminiProvider.fetchGeminiRecipe(pantryProvider
         .getEntries()
-        .map((entry) => '${entry.text} x ${entry.quantity}')
+        .map((entry) => '${entry.text} x ${entry.quantity} ${entry.unit}')
         .toList());
 
     //wait for the asynchroneous call to Navigator.push to return via pop then execute the code below
@@ -330,7 +364,7 @@ class AllEntriesView extends StatelessWidget {
     await geminiProvider.fetchGeminiRecipe(
         pantryProvider
             .getEntries()
-            .map((entry) => '${entry.text} x ${entry.quantity}')
+            .map((entry) => '${entry.text} x ${entry.quantity} ${entry.unit}')
             .toList(),
         city: positionProvider.city,
         country: positionProvider.country);

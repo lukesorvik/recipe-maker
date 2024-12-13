@@ -17,22 +17,33 @@ class IngredientEntry {
   // the quantity of the ingredient entry
   final int quantity;
 
+  // the measurement unit of the ingredient entry
+  final String unit;
+
   // factory constructor that creates a new IngredientEntry object from a text string
   // @param text: the text of the ingredient entry, default value is an empty string. optional named parameter
   // @param quantity: the quantity of the ingredient entry, default value is 0. optional named parameter
+  // @param unit: the unit of the ingredient entry, default value is an '' SINCE IT HAS TO BE A VALUE PRESENT IN THE DROPDOWN MENU LIST OR ERROR
+  //optional named parameter
   // @return a new IngredientEntry object
-  factory IngredientEntry.fromText({String text = '', int quantity = 0}) {
+  factory IngredientEntry.fromText(
+      {String text = '', int quantity = 0, unit = ''}) {
     return IngredientEntry(
         text: text,
         quantity: quantity,
-        id: Isar.autoIncrement); // increment the new id
+        id: Isar.autoIncrement,
+        unit: unit); // increment the new id
   }
 
   // constructor for IngredientEntry
   // @param text: the text of the ingredient entry
   // @param quantity: the quantity of the ingredient entry
   // @param id: the id of the ingredient entry, optional so that isar can generate the id for us
-  IngredientEntry({required this.text, required this.quantity, this.id});
+  IngredientEntry(
+      {required this.text,
+      required this.quantity,
+      this.id,
+      required this.unit});
 
   // method to update the text of an ingredient entry
   // @param entry: the ingredient entry to update
@@ -41,7 +52,8 @@ class IngredientEntry {
   IngredientEntry.withUpdatedText(IngredientEntry entry, String newText)
       : id = entry.id,
         text = newText,
-        quantity = entry.quantity;
+        quantity = entry.quantity,
+        unit = entry.unit;
 
   // method to update the quantity of an ingredient entry
   // @param entry: the ingredient entry to update
@@ -50,7 +62,19 @@ class IngredientEntry {
   IngredientEntry.withUpdatedQuantity(IngredientEntry entry, int newQuantity)
       : id = entry.id,
         text = entry.text,
-        quantity = newQuantity;
+        quantity = newQuantity,
+        unit = entry.unit;
+
+  // with updated unit
+  // method to update the unit of an ingredient entry
+  // @param entry: the ingredient entry to update
+  // @param newUnit: the new unit to replace the old unit
+  // @return a new IngredientEntry object with the updated unit
+  IngredientEntry.withUpdatedUnit(IngredientEntry entry, String newUnit)
+      : id = entry.id,
+        text = entry.text,
+        quantity = entry.quantity,
+        unit = newUnit;
 
   // method to update both the text and quantity of an ingredient entry
   // @param entry: the ingredient entry to update
@@ -61,5 +85,6 @@ class IngredientEntry {
       IngredientEntry entry, String newText, int newQuantity)
       : id = entry.id,
         text = newText,
-        quantity = newQuantity;
+        quantity = newQuantity,
+        unit = entry.unit;
 }
