@@ -10,7 +10,7 @@
 Well, struggle no more! With Recipe Maker, you can simply list the ingredients you have, hit the **Generate** button, and get a personalized recipe instantly!
 
 ---
-![Image](assets\repoImages\example.png)
+![Image](assets/repoImages/example.png)
 
 ## Features
 
