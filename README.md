@@ -1,12 +1,15 @@
 # Recipe Maker
 
 ## Installation
- 1.  First download the `APIKEY.env` file
+ 1.  First make a `APIKEY.env` file
      * Has the api key used for Gemini AI model  
- 2.  Move the file into the `/recipe-maker` directory
- 3. Run `flutter pub get` to get dependencies
+2.  Enter the following to the `APIKEY.env` file:
+     * `APIKEY='Gemini api key here'`
+ 3.  Move the file into the `/recipe-maker` directory
+ 4. Run `flutter pub get` to get dependencies
+ 5. Run the app ! enjoy!
 
 
  ## Devices
- * Only tested to run on Android.
- * Might run on IOS, but geocoder may not work. We did not test IOS.
+ * Only will run on IOS and Android due to using  device hardware geocoder to get location from gps, and also gps sensors used. 
+    * Might work on other OS's but it has not been tested.
