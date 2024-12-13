@@ -27,10 +27,27 @@ class GeminiProvider extends ChangeNotifier {
   // If error occurs then tell user to regenerate recipe
   bool _hasError = false;
 
+  String CuisineType = '';
+  String MealType = '';
+
   // Getters
   Response get recipe => _recipe;
   bool get isLoading => _isLoading;
   bool get hasError => _hasError;
+
+  // Setter for cuisine type
+  void setCuisineType(String cuisineType) {
+    print('Cuisine Type: ' + cuisineType);
+    CuisineType = cuisineType;
+    notifyListeners();
+  }
+
+// Setter for meal type
+  void setMealType(String mealType) {
+    print('Meal Type: ' + mealType);
+    MealType = mealType;
+    notifyListeners();
+  }
 
   // Fetches a recipe from the Gemini model
   // Sets _recipe to the generated recipe, _isLoading to false, and _hasError to false
@@ -38,15 +55,13 @@ class GeminiProvider extends ChangeNotifier {
   // Uses future void so we can do async operations
   //-------------------------------------------------
   // Parameters:
-  // mealType: the type of meal for the recipe [ex: breakfast, lunch, dinner]
   // ingredients: a list of ingredients for the recipe
   // Named Optional Parameters (default optional unless specified required):
   // city: the city where the recipe is being generated (default is empty string)
   // country: the country where the recipe is being generated (default is empty string)
-  // cuisineType: the type of cuisine for the recipe [ex: mexican, italian, chinese] ( default is empty string)
 
-  Future<void> fetchGeminiRecipe(String mealType, List<String> ingredients,
-      {String cuisineType = '', String city = '', String country = ''}) async {
+  Future<void> fetchGeminiRecipe(List<String> ingredients,
+      {String city = '', String country = ''}) async {
     // Load the .env file
     await dotenv.load(fileName: "APIKEY.env");
 
@@ -104,10 +119,10 @@ class GeminiProvider extends ChangeNotifier {
     final ingredientPrompt = ingredients.toString();
     // Prompt for the Gemini model
     final prompt =
-        'Give me a $cuisineType recipe for $mealType that uses any of the ingredients in this'
+        'Give me a $CuisineType recipe for $MealType that uses any of the ingredients in this'
         ' list of any quantity: $ingredientPrompt  Generated recipe must not use any ingredients not in '
         'the ingredients list other than spices and water.'
-        ' $extraPrompt';
+        ' $extraPrompt. Make the recipe in english.';
     // Debug print the prompt
     print('\n Prompt: ' + prompt);
     final response = await model.generateContent([Content.text(prompt)]);

@@ -11,6 +11,9 @@ class AllEntriesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the keyboard is open
+    bool isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom != 0;
+
     return Scaffold(
         appBar: AppBar(
             backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -48,44 +51,129 @@ class AllEntriesView extends StatelessWidget {
                 flex: 10,
                 // for each entry in the journal, create a list element
                 // using the _createListElementForEntry method
-                child: listViewBuilder()),
-            Spacer(flex: 1),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  constraints: const BoxConstraints(minHeight: 45),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _navigateToRecipeResponse(context);
-                    },
-                    icon: const Icon(Icons.food_bank, size: 25),
-                    label:
-                        const Text('Generate', style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  constraints: BoxConstraints(minHeight: 45),
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _navigateToRecipeResponseLocation(context);
-                    },
-                    icon: const Icon(Icons.location_on, size: 25),
-                    label: const Text('Generate with Location',
-                        style: TextStyle(fontSize: 20)),
-                  ),
-                ),
-              ],
-            ),
-            Spacer(flex: 1),
+                child: recipeListViewBuilder()),
+            // If the user clicks on something to edit hide the generate buttons
+            // since they get in the way
+            if (!isKeyboardOpen) Spacer(flex: 1),
+            if (!isKeyboardOpen) GenerateColumn(context),
+            if (!isKeyboardOpen) Spacer(flex: 1),
           ],
         ));
   }
 
+  Column GenerateColumn(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        BuildMealList(),
+        const SizedBox(height: 10),
+        BuildCuisineList(),
+        const SizedBox(height: 10),
+        Container(
+          constraints: const BoxConstraints(minHeight: 45),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              _navigateToRecipeResponse(context);
+            },
+            icon: const Icon(Icons.food_bank, size: 25),
+            label: const Text('Generate', style: TextStyle(fontSize: 20)),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Container(
+          constraints: BoxConstraints(minHeight: 45),
+          child: ElevatedButton.icon(
+            onPressed: () {
+              _navigateToRecipeResponseLocation(context);
+            },
+            icon: const Icon(Icons.location_on, size: 25),
+            label: const Text('Generate with Location',
+                style: TextStyle(fontSize: 20)),
+          ),
+        ),
+      ],
+    );
+  }
+
+// Builds the meal list for the user to select from
+// updates gemini provider for when we generate
+  Row BuildMealList() {
+    List<String> meals = ['breakfast', 'lunch', 'dinner'];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(meals.length, (index) {
+        return Consumer<GeminiProvider>(
+          builder: (context, geminiProvider, child) {
+            bool isSelected = geminiProvider.MealType == meals[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 3),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isSelected ? Colors.blue : Colors.black,
+                ),
+                onPressed: () {
+                  geminiProvider.setMealType(meals[index]);
+                },
+                child: Text(
+                  meals[index],
+                  style: const TextStyle(fontSize: 20),
+                ),
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
+// Builds the cuisine list for the user to select from
+// updates gemini provider for when we generate
+  SingleChildScrollView BuildCuisineList() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: List.generate(10, (index) {
+          // List of 10 cuisines : mexican, italian, chinese, indian, french, japanese, korean, thai, vietnamese, greek
+          List<String> cuisines = [
+            'mexican',
+            'italian',
+            'chinese',
+            'indian',
+            'french',
+            'japanese',
+            'korean',
+            'thai',
+            'vietnamese',
+            'greek'
+          ];
+          return Consumer<GeminiProvider>(
+            builder: (context, geminiProvider, child) {
+              bool isSelected = geminiProvider.CuisineType == cuisines[index];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelected ? Colors.blue : Colors.black,
+                  ),
+                  onPressed: () {
+                    geminiProvider.setCuisineType(cuisines[index]);
+                  },
+                  child: Text(
+                    cuisines[index],
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                ),
+              );
+            },
+          );
+        }),
+      ),
+    );
+  }
+
   // create a ListView widget of all of the meal entries for the current date
   // @returns a List view widget
-  Widget listViewBuilder() {
+  Widget recipeListViewBuilder() {
     return Consumer<PantryProvider>(
       builder: (context, pantryProvider, child) {
         final entries = pantryProvider.getEntries();
@@ -209,12 +297,10 @@ class AllEntriesView extends StatelessWidget {
         Provider.of<PantryProvider>(context, listen: false);
 
     // TODO: change to just navigate to RECIPE RESPONSE then call gemini there so can have loading symbol
-    await geminiProvider.fetchGeminiRecipe(
-        '',
-        pantryProvider
-            .getEntries()
-            .map((entry) => '${entry.text} x ${entry.quantity}')
-            .toList());
+    await geminiProvider.fetchGeminiRecipe(pantryProvider
+        .getEntries()
+        .map((entry) => '${entry.text} x ${entry.quantity}')
+        .toList());
 
     //wait for the asynchroneous call to Navigator.push to return via pop then execute the code below
     await Navigator.push(
@@ -256,7 +342,6 @@ class AllEntriesView extends StatelessWidget {
     // TODO: change to just navigate to RECIPE RESPONSE then call gemini there so can have loading symbol
     // Call with city and country from recipe provider
     await geminiProvider.fetchGeminiRecipe(
-        '',
         pantryProvider
             .getEntries()
             .map((entry) => '${entry.text} x ${entry.quantity}')
